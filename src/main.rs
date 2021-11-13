@@ -11,21 +11,30 @@ fn main() {
 fn get_subtitle(file:&String){
 
     let metadata = process::Command::new("ffprobe")
-        .arg("-i")
+        .arg("-loglevel")
+        .arg("error")
+        .arg("-select_streams")
+        .arg("s")
+        .arg("-show_entries")
+        .arg("stream=index:stream_tags=language")
+        .arg("-of")
+        .arg("csv=p=0")
         .arg(file.to_string())
         .stdout(process::Stdio::piped())
-        .spawn()
-        .expect("Broken");
+        .output()
+        .unwrap();
 
-    let echo = metadata.stdout.expect("hmmm");
+    let echo = String::from_utf8(metadata.stdout).unwrap();
+    let v: Vec<&str> = echo.split('\n').collect();
+    println!("{:?}",v);
 
-    println!("{:?}",echo);
     //let subtitle_grabber = process::Command::new("ffmpeg")
     //    .arg("-i")
     //    .arg(file.to_string())
     //    .arg("-map")
     //    .arg("0:s:0")
     //    .arg("/home/iggy/Documents/subs.srt");
+
 
 
 
