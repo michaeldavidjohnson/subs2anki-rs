@@ -19,7 +19,7 @@ fn get_subtitle(file:&String){
 
     let echo = metadata.stdout.expect("hmmm");
 
-    println!("fucking rape me{:?}",echo);
+    println!("{:?}",echo);
     //let subtitle_grabber = process::Command::new("ffmpeg")
     //    .arg("-i")
     //    .arg(file.to_string())
@@ -27,7 +27,6 @@ fn get_subtitle(file:&String){
     //    .arg("0:s:0")
     //    .arg("/home/iggy/Documents/subs.srt");
 
-    
 
 
 
