@@ -1,13 +1,31 @@
 use std::env;
 use std::process;
+use std::fs;
+use regex::Regex;
+
 fn main() {
     let _args: Vec<String> = env::args().collect();
+
+    //Currently, there is no user input. So there are two file handlings I want to support. Firstly, subtitle splitting and forming
+    //Secondly, subtitle extraction. A UI should be made that passes an arbritary amount of video files as well as couple extra subtitle files
+    //This will have to be a specific format into _args which allows for the code to generalise. For now, I don't have this, Therefore the blocks
+    //are commented out.
     let filepaths = &_args[1..];
+    //Subtitle splitting, again we really need user input here to decide which functions to use instead of commenting out bad functions.
     for file in filepaths{
-        let subtitles = ffprobe_get_subtitle_sources(file);
-        ffmpeg_subtitle_extractor(subtitles.clone(),file);
-        create_subtitle_metadata(subtitles.clone());
+        let (start_times, end_times, text) = read_subtitles_and_split(file);
+        for val in start_times{
+            println!("{}",val);
+        }
+
     }
+    //Subtitle extraction, doesn't really have any handling of if you already have the files or not. Really missing some form of
+    //consistent user input.
+    //for file in filepaths{
+    //    let subtitles = ffprobe_get_subtitle_sources(file);
+    //    ffmpeg_subtitle_extractor(subtitles.clone(),file);
+    //    create_subtitle_metadata(subtitles.clone());
+    //}
 }
 
 fn ffprobe_get_subtitle_sources(file:&String) -> Vec<String>{
@@ -61,5 +79,25 @@ fn create_subtitle_metadata(source_list:Vec<String>){
         subtitle_paths.append(&mut subtitle_filepath)
     }
     println!("{:?}",subtitle_paths)
+
+}
+
+fn read_subtitles_and_split(file:&String)->(Vec<String>,Vec<String>,Vec<String>){
+    //Should split the subtitle file properly, although there still are html formatting present in text.
+    //Groups are order, start, end, text.
+    let re = Regex::new(r"(?P<order>\d+)\n(?P<Start>[\d:,]+)\s+-{2}>\s+(?P<end>[\d:,]+)\n(?P<text>[\s\S].*)").unwrap();
+    let contents = fs::read_to_string(file).expect("Failed to read filename");
+    let mut start:Vec<String> = Vec::new();
+    let mut end:Vec<String> = Vec::new();
+    let mut text:Vec<String> = Vec::new();
+    for cap in re.captures_iter(&contents){
+
+        start.push(cap[2].to_string());
+        end.push(cap[3].to_string());
+        text.push(cap[4].to_string());
+    }
+    return (start, end, text)
+
+    //println!("{}",contents);
 
 }
