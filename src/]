@@ -15,6 +15,11 @@ fn main() {
     for file in filepaths{
         let (start_times, end_times, text) = read_subtitles_and_split(file);
         let formatted_text = format_text_to_remove_html(text);
+
+        for val in start_times{
+            println!("{}",val);
+        }
+
     }
     //Subtitle extraction, doesn't really have any handling of if you already have the files or not. Really missing some form of
     //consistent user input.
@@ -104,8 +109,9 @@ fn format_text_to_remove_html(text:Vec<String>)->Vec<String>{
     let text_to_change: Vec<&str> = text.iter().map(|s| &**s).collect();
     let mut result:Vec<String> = Vec::new();
     for line in text_to_change{
-        result.push(re.replace_all(&line,"").to_string());
+        let result = re.replace_all(&line,"");
+        println!("{}",result);
     }
 
-    return result;
+    return text;
 }
