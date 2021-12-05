@@ -93,10 +93,10 @@ fn ffmpeg_generate_screenshots(start_time:&Vec<String>,end_time:&Vec<String>){ /
 
         // Look into passing all times in one command, to improve performance
         process::Command::new("ffmpeg")
-            .arg("-i")
-            .arg(temp_video)
             .arg("-ss")
             .arg(initial_time)
+            .arg("-i")
+            .arg(temp_video)
             .arg("-vframes")
             .arg("1")
             .arg(out_path)
