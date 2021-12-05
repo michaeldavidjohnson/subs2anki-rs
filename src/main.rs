@@ -15,6 +15,7 @@ fn main() {
     for file in filepaths{
         let (start_times, end_times, text) = read_subtitles_and_split(file);
         let formatted_text = format_text_to_remove_html(text);
+        ffmpeg_generate_screenshots(&start_times,&end_times);
     }
     //Subtitle extraction, doesn't really have any handling of if you already have the files or not. Really missing some form of
     //consistent user input.
@@ -66,6 +67,45 @@ fn ffmpeg_subtitle_extractor(source_list:Vec<String>,file:&String){
             .spawn().unwrap();
     }
 
+}
+
+fn ffmpeg_generate_screenshots(start_time:&Vec<String>,end_time:&Vec<String>){ //This definitely will need to take the video as an arg
+    let temp_video = "/run/media/iggy/Seagate Backup Plus Drive/Anime/Bakuman/S1/(Hi10)_Bakuman_-_01_(BD_720p)_(Judgment)_(E9EA961E).mkv";
+
+    let temp_location = "/home/iggy/Documents/Rust/subs2srsclone/Temp/"; //This'll need to be a config thing
+    let start_times = start_time;
+    let end_times = end_time;
+    let mut index = 0;
+    for i in start_times.iter(){
+        let out_path = format!{"{}{}.jpg",temp_location,index};
+        let mut removed = i.to_string().clone();
+        let mut sub_index = 0;
+        let mut sub_string:Vec<char> = Vec::new();
+        for c in removed.chars(){
+            if sub_index == 8{
+                break;
+            }
+            let value = c.clone();
+            sub_string.push(value);
+            sub_index = sub_index + 1;
+        }
+        let initial_time:String = sub_string.into_iter().collect();
+
+        // Look into passing all times in one command, to improve performance
+        process::Command::new("ffmpeg")
+            .arg("-i")
+            .arg(temp_video)
+            .arg("-ss")
+            .arg(initial_time)
+            .arg("-vframes")
+            .arg("1")
+            .arg(out_path)
+            .spawn()
+            
+            .unwrap().wait().unwrap();
+        index = index + 1;
+    }
+  
 }
 
 fn create_subtitle_metadata(source_list:Vec<String>){
