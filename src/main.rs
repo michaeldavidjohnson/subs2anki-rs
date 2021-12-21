@@ -10,13 +10,49 @@ fn main() {
     //Secondly, subtitle extraction. A UI should be made that passes an arbritary amount of video files as well as couple extra subtitle files
     //This will have to be a specific format into _args which allows for the code to generalise. For now, I don't have this, Therefore the blocks
     //are commented out.
+
+
+    //Logic for separating inputs into subtitle files and video files, this will become the backbone of being able to call the other commands.
+    //We now just need a way to zip the two vecs together to performe subtitle splitting, screenshot generation, etc.
+    let accepted_subtitle_extensions = ["srt","why"];
+    let accepted_video_extensions = ["mkv","mp4","avi"];
     let filepaths = &_args[1..];
-    //Subtitle splitting, again we really need user input here to decide which functions to use instead of commenting out bad functions.
+    let mut subtitles = Vec::<&String>::new();
+    let mut videos = Vec::<&String>::new();
     for file in filepaths{
-        let (start_times, end_times, text) = read_subtitles_and_split(file);
-        let formatted_text = format_text_to_remove_html(text);
-        ffmpeg_generate_screenshots(&start_times,&end_times);
+        for sub in accepted_subtitle_extensions{
+            let last_three: Vec<char> = file.chars().rev().take(3).collect();
+            let last_three_subtitle: Vec<char> = sub.chars().rev().take(3).collect();
+            let subtitle_condition = last_three_subtitle.into_iter().rev().collect::<String>() == last_three.into_iter().rev().collect::<String>();
+            if subtitle_condition{
+                subtitles.push(file);
+
+            }
+        }
+        for viddy in accepted_video_extensions{
+            let last_three: Vec<char> = file.chars().rev().take(3).collect();
+            let last_three_video: Vec<char> = viddy.chars().rev().take(3).collect();
+            let video_condition = last_three_video.into_iter().rev().collect::<String>() == last_three.into_iter().rev().collect::<String>();
+            if video_condition{
+                videos.push(file)
+            }
+        }
     }
+    for val in &subtitles{
+        println!("{}",val);
+    }
+    for val in &videos{
+        println!{"{}",val};
+    }
+
+    //Subtitle splitting, again we really need user input here to decide which functions to use instead of commenting out bad functions.
+    //for file in filepaths{
+    //    let (start_times, end_times, text) = read_subtitles_and_split(file);
+    //    let formatted_text = format_text_to_remove_html(text);
+    //    ffmpeg_generate_screenshots(&start_times,&end_times);
+    //}
+
+
     //Subtitle extraction, doesn't really have any handling of if you already have the files or not. Really missing some form of
     //consistent user input.
     //for file in filepaths{
@@ -101,11 +137,9 @@ fn ffmpeg_generate_screenshots(start_time:&Vec<String>,end_time:&Vec<String>){ /
             .arg("1")
             .arg(out_path)
             .spawn()
-            
             .unwrap().wait().unwrap();
         index = index + 1;
     }
-  
 }
 
 fn create_subtitle_metadata(source_list:Vec<String>){
