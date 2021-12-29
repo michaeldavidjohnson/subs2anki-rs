@@ -51,7 +51,6 @@ fn main() {
     }
 
     if subtitles.len() == 0 as usize && extractor_toggle == true{
-        println!("{:?}",&videos);
         subtitle_extraction(&videos);
     }
 
@@ -69,10 +68,12 @@ fn populate_information_and_screenshots(subtitle_files: &Vec<&String>,video_file
 
 //Needs user input to select subtitles
 fn subtitle_extraction(video_files: &Vec<&String>){
+    let mut i = 0;
     for file in video_files {
-        let subtitles = ffprobe_get_subtitle_sources(file);
-        ffmpeg_subtitle_extractor(subtitles.clone(),file);
-        create_subtitle_metadata(subtitles.clone());
+        let subtitle_sources = ffprobe_get_subtitle_sources(file);
+        ffmpeg_subtitle_extractor(subtitle_sources.clone(),file,&i);
+        create_subtitle_metadata(subtitle_sources.clone());
+        i = i+1;
     }
 }
 
@@ -98,13 +99,14 @@ fn ffprobe_get_subtitle_sources(file:&String) -> Vec<String>{
 
 }
 
-fn ffmpeg_subtitle_extractor(source_list:Vec<String>,file:&String){
+fn ffmpeg_subtitle_extractor(source_list:Vec<String>,file:&String,file_number:&i32){
+    fs::create_dir(format!("{}{}",TEMP_FILEPATH,file_number)).unwrap();
     for source in source_list{
         let t:Vec<&str> = source.split(',').collect(); 
         let stream = t[0];
         let name = t[1];
         let stream_info = format!("0:{}",stream);
-        let filename = format!("{}{}.srt",TEMP_FILEPATH,name);
+        let filename = format!("{}{}/{}.srt",TEMP_FILEPATH,file_number,name);
         process::Command::new("ffmpeg")
             .arg("-hide_banner")
             .arg("-loglevel")
